@@ -13,26 +13,47 @@ class MazeEnv(gym.Env):
         - Using np.int8 for observations can cause training instability. Neural networks expect float inputs. Try np.float32 and normalize values to [0, 1] instead of raw 0-3.
         - Add a max_steps parameter to prevent episodes from running forever.
         """
-        self.observation_space = spaces.Box(0, 3, (1, 10, 10), dtype=np.int8)
-        # self.observation_space = spaces.Box(0, 1, (1, 10, 10), dtype=np.float32)
+        # self.observation_space = spaces.Box(0, 3, (1, 10, 10), dtype=np.int8)
+        self.observation_space = spaces.Box(0, 1, (1, 10, 10), dtype=np.float32)
         # TODO
-        # self._max_steps = max_steps
-        # self._steps = 0
-        # self._maze = None 
-        # self.start_pos = None
-        # self.goal_pos = None
-        # self.agent_pos = self.start_pos
-        pass
+        self._max_steps = 200
+        self._steps = 0
+        self._maze = np.array([
+        [1,1,1,1,1,1,1,1,1,1],
+        [1,0,0,0,1,0,0,0,0,1],
+        [1,0,1,0,1,0,1,1,0,1],
+        [1,0,1,0,0,0,0,0,0,1],
+        [1,0,1,1,1,1,1,1,0,1],
+        [1,0,0,0,0,0,0,1,0,1],
+        [1,1,1,0,1,1,0,1,0,1],
+        [1,0,0,0,1,0,0,1,0,1],
+        [1,0,1,0,0,0,1,0,0,1],
+        [1,1,1,1,1,1,1,1,1,1]
+        ])
+        self.visited = np.zeros((10,10), dtype=np.int8)
+        self.start_pos = (1, 1)
+        self.goal_pos = (8, 8)
+        self.agent_pos = self.start_pos
+        return
 
     def _get_obs(self):
         """
         Note: Normalize values to [0, 1] so the neural network sees well-scaled inputs. Raw int values 0-3 can produce large gradients and slow or unstable learning.
         """
-        pass
+        obs = self._maze.copy()
+        obs[self.goal_pos] = 2
+        obs[self.agent_pos] = 3
+        obs = obs.astype(np.float32)
+        obs /= 3.0
+        return obs.reshape(1,10,10)
 
-    def reset(self, seed=None):
+    def reset(self, seed=None, options=None):
         # Track step count here so you can truncate long episodes in step().
-        pass
+        self._steps = 0
+        self.agent_pos = self.start_pos
+        self.visited.fill(0)
+        self.visited[self.start_pos] = 1
+        return self._get_obs(), {}
 
     def step(self, action):
         """
@@ -42,11 +63,37 @@ class MazeEnv(gym.Env):
          - What happens if you increase the goal reward? (+1 is quite small)
          - Try removing the revisit penalty and see what the agent does
         """
-        pass
+        if action == 0:
+            dr, dc = -1, 0
+        elif action == 1:
+            dr, dc = 0, 1
+        elif action == 2:
+            dr, dc = 1, 0
+        else:
+            dr, dc = 0, -1
+        reward = 0
+        if self._maze[self.agent_pos[0]+dr][self.agent_pos[1]+dc]==0:
+            self.agent_pos = (self.agent_pos[0] + dr, self.agent_pos[1] + dc)
+            if self.agent_pos==self.goal_pos: reward = 10
+            elif self.visited[self.agent_pos] == 1: reward = -0.3
+            else: reward = -0.01
+        else :
+            reward = -0.5
+        self._steps += 1
+        self.visited[self.agent_pos] = 1
+        return self._get_obs(), reward, self.agent_pos == self.goal_pos, self._steps>=self._max_steps, {}
+        
 
     def _render_rgb(self):
         # Note: Return shape (height, width, 3) with uint8 values 0-255.
-        pass
+        img = np.zeros((10, 10, 3), dtype=np.uint8)
+        for i in range(10):
+            for j in range(10):
+                if self._maze[i][j] == 0:
+                    img[i][j] = (255, 255, 255)
+        img[self.goal_pos] = (0, 255, 0)
+        img[self.agent_pos] = (255, 0, 0)
+        return img
 
 
 def main():

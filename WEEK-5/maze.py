@@ -28,7 +28,7 @@ def main():
         surf = pygame.surfarray.make_surface(rgb.transpose(1, 0, 2))
         screen.blit(pygame.transform.scale(surf, (500, 500)), (0, 0))
         pygame.display.flip()
-        clock.tick(10)
+        clock.tick(1)
 
 
 if __name__ == "__main__":

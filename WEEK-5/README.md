@@ -18,12 +18,12 @@ python3 cartpole.py
 
 Read the code. It creates a CartPole environment from Gymnasium, trains a PPO agent on it, and then lets the trained agent balance the pole. Learn more about cartpole from [here](https://gymnasium.farama.org/environments/classic_control/cart_pole/)
 
-
 ## Task 2 — Maze
 
 You need to train an agent to navigate from the start to the goal in a maze. The maze has walls (1)and paths (0). The agent can move up, right, down, or left.
 
 Example Maze layout:
+
 ```
 1 1 1 1 1 1 1 1 1 1
 1 0 0 0 1 0 0 0 0 1
@@ -36,6 +36,7 @@ Example Maze layout:
 1 0 1 0 0 0 1 0 0 1
 1 1 1 1 1 1 1 1 1 1
 ```
+
 Start is at (1,1) and end at (8,8)
 You need to complete the MazeEnv class in `maze_train.py`.
 
@@ -43,18 +44,20 @@ You need to complete the MazeEnv class in `maze_train.py`.
 
 `__init__`
 It stores the action space, observation space, maze layout, the start position, and the goal position.
+
 - `self.action_space = spaces.Discrete(4)` means the agent has 4 choices: up, right, down, and left.
 - `self.observation_space = Box(0, 3, (1, 10, 10), np.int8)` means the observation is a 10 by 10 grid where each cell has a value between 0 and 3. The (1, 10, 10) shape means there is one channel (like a black-and-white image) with 10 rows and 10 columns. You may want to use float32 and a normalized cell value for better results.
 
 `_get_obs(self)`
 This function turns the current maze and agent position into a numpy array.
 The returned array should have shape `(1, 10, 10)` and use these values:
+
 - `0` for empty path cells
 - `1` for wall cells
 - `2` for the goal cell
 - `3` for the agent's current position
-- Normalize them to [0,1]. 
-  
+- Normalize them to [0,1].
+
 `reset(self, seed=None)`
 This function is called every time a new episode starts. It puts the agent back at the start position.
 Read the documentation once for more detailed information.
@@ -68,16 +71,19 @@ This function creates a colour representation of the maze using a NumPy array. T
 ### Do this after you are done:
 
 Install dependencies:
+
 ```
 pip install -r requirements.txt
 ```
 
 First, train the agent:
+
 ```
 python3 maze_train.py
 ```
 
 Then watch it solve the maze:
+
 ```
 python3 maze.py
 ```
